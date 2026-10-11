@@ -45,6 +45,13 @@ All three share the same core loop: triage → dispatch N calls in parallel → 
 agent executes its objective → aggregator normalizes results → user sees one
 combined outcome.
 
+**SMS fallback:** if a target doesn't answer after N failed call attempts within a
+window, Dormammu switches that target to a full conversational agent over SMS
+instead of a one-shot "please call us back" text — same negotiation/scheduling
+objective, carried on over text. This also extends naturally to targets where text
+is simply the better channel (e.g. a vendor that explicitly prefers SMS), not only
+as a last resort for unreachable ones.
+
 ## 4. Demo mechanic
 
 Submission is a **recorded video**, not a live on-stage call. This removes the
@@ -58,8 +65,8 @@ edited into the submission. Still show the parallel-dispatch moment on screen
 
 | Need | Choice | Why |
 |---|---|---|
-| Calling / telephony | **Dial** (getdial.ai) | Sponsor tool, gives agents real phone numbers, MCP server + SDK already connected to this repo. Likely already bundles STT/TTS — confirm via docs.getdial.ai before adding a separate voice stack. |
-| STT/TTS (if Dial's own pipeline isn't sufficient) | **Ultravox** or **ElevenLabs Conversational AI** | Near-complete speech-to-speech pipelines (not just raw STT or TTS), smallest integration surface for a 12hr build. Deepgram+Aura-2 as the "boring but reliable" fallback. |
+| Calling / telephony + voice agent | **Dial** (getdial.ai) | Sponsor tool. Provisions agent phone numbers AND runs the conversational layer itself (STT/TTS/turn-taking via Deepgram Flux, LLM-driven dialogue) from a plain-language instruction string — no separate voice-agent layer needed. MCP server + SDK already connected to this repo. Considered and dropped QuickVoice (a real OSS Retell-alternative) since it's a peer/competitor to Dial's own voice agent, not an add-on to it, and would've been redundant integration work. |
+| SMS / texting agent | **Dial** (same SDK, SMS capability) | Powers the full-conversation SMS fallback — same negotiation/scheduling objective as the voice agent, carried over text for unreachable or SMS-preferring targets. |
 | Calendar | **Google Calendar API** | Obvious choice for scheduling track. Use a Desktop-app OAuth client for fastest local setup; add team Google accounts as OAuth test users to avoid `403: access_denied`; keep `credentials.json` named exactly that per Google's sample code. |
 | Mock vendor data (comparison shopping) | **Our own fixture data + our own test phone line(s)**, not a third-party sandbox | Full control, zero live-dependency risk, demoable and rehearsable. A hand-built JSON of 4-5 vendor quotes read back via a simple IVR/TTS stub we control. |
 | Agent-performance analytics / continuous improvement | **Keewano (KeewanoDB)** | Core MVP feature — see §6. |
@@ -109,8 +116,6 @@ result — was not found in any competitor. That is the core unique claim.
 
 ## 8. Open questions / risks
 
-- Confirm Dial's own voice pipeline (STT/TTS/telephony) is sufficient before adding
-  a second voice vendor — check docs.getdial.ai first.
 - Verify any third-party mock-data APIs (e.g. insurance quote sandboxes) are
   actually reachable before depending on them; prefer our own fixtures.
 - Keewano hackathon-day setup (API key, sandbox dataset) unconfirmed — check with
