@@ -1,4 +1,4 @@
-# Dispatch
+# Dormammu
 
 Parallel AI phone calls for phone-gated bottlenecks. Built at SpeedHacks (a16z speedrun, Oct 11 2026).
 
